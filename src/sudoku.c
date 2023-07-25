@@ -1,120 +1,125 @@
 #include "sudoku.h"
-
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "bitset.h"
 
-Cell sudoku_cell(size_t row, size_t col) {
-  return (Cell){.row = row, .col = col};
-}
-
-bool sudoku_cell_is_valid(Cell cell) {
-  return 0 < cell.row && cell.row <= 9 && 0 < cell.col && cell.col <= 9;
-}
-
 Sudoku* sudoku_new() {
-  Sudoku* state = malloc(sizeof(Sudoku));
-  *state = (Sudoku){
-      .board = (size_t*)calloc(1, sizeof(size_t) * 9 * 0),
+  Sudoku state = (Sudoku){
+      .board = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0
+      },
       .row_contains = {0, 0, 0, 0, 0, 0, 0, 0, 0},
       .col_contains = {0, 0, 0, 0, 0, 0, 0, 0, 0},
       .grid_contains = {0, 0, 0, 0, 0, 0, 0, 0, 0},
   };
 
+  return &state;
+}
+
+char sudoku_get(Sudoku* state, char row, char col) {
+  return state->board[BOARD_INDEX(row, col)];
+}
+
+Sudoku * something(Sudoku * state) {
   return state;
 }
 
-size_t sudoku_get(Sudoku* state, Cell position) {
-  return state->board[BOARD_INDEX(position)];
-}
+char sudoku_set(Sudoku* state, char row, char col, char value) {
+  Bitset* row_bitset = &(state->row_contains[row - 1]);
+  Bitset* col_bitset = &(state->col_contains[col - 1]);
+  Bitset* grid_bitset = &(state->grid_contains[BOARD_GRID_INDEX(row, col)]);
 
-void sudoku_set(Sudoku* state, Cell position, size_t value) {
-  if (0 >= value || value >  9) {
-    printf("value invalid: %zu", value);
-    exit(EXIT_FAILURE);
+  if (bitset_contains(*row_bitset, (int)value) ||
+      bitset_contains(*col_bitset, (int)value) ||
+      bitset_contains(*grid_bitset, (int)value)) {
+    return 0;
   }
 
-  Bitset* row = &(state->row_contains[position.row - 1]);
-  Bitset* col = &(state->col_contains[position.col - 1]);
-  Bitset* grid = &(state->grid_contains[BOARD_GRID_INDEX(position)]);
+  *row_bitset = bitset_insert(*row_bitset, (int)value);
+  *col_bitset = bitset_insert(*col_bitset, (int)value);
+  *grid_bitset = bitset_insert(*grid_bitset, (int)value);
 
-  *row = bitset_insert(*row, value);
-  *col = bitset_insert(*col, value);
-  *grid = bitset_insert(*grid, value);
-
-  state->board[BOARD_INDEX(position)] = value;
+  state->board[BOARD_INDEX(row, col)] = value;
+  return 1;
 }
 
-void sudoku_unset(Sudoku* state, Cell position) {
-  size_t value = sudoku_get(state, position);
+void sudoku_unset(Sudoku* state, char row, char col) {
+  char value = sudoku_get(state, row, col);
 
-  Bitset* row = &(state->row_contains[position.row - 1]);
-  Bitset* col = &(state->col_contains[position.col - 1]);
-  Bitset* grid = &(state->grid_contains[BOARD_GRID_INDEX(position)]);
+  Bitset* row_bitset = &(state->row_contains[row - 1]);
+  Bitset* col_bitset = &(state->col_contains[col - 1]);
+  Bitset* grid_bitset = &(state->grid_contains[BOARD_GRID_INDEX(row, col)]);
 
-  *row = bitset_remove(*row, value);
-  *col = bitset_remove(*col, value);
-  *grid = bitset_remove(*grid, value);
+  *row_bitset = bitset_remove(*row_bitset, (int)value);
+  *col_bitset = bitset_remove(*col_bitset, (int)value);
+  *grid_bitset = bitset_remove(*grid_bitset, (int)value);
 
-  state->board[BOARD_INDEX(position)] = 0;
+  state->board[BOARD_INDEX(row, col)] = 0;
 }
 
-Cell sudoku_next_empty_cell(Sudoku* state) {
-  for (size_t row = 1; row <= 9; ++row) {
-    for (size_t col = 1; col <= 9; ++col) {
-      Cell cell = sudoku_cell(row, col);
-
-      if (sudoku_get(state, cell) == 0) {
-        return sudoku_cell(row, col);
+void sudoku_next_empty_cell(Sudoku* state, char * row_target, char * col_target) {
+  for (char row = 1; row <= 9; ++row) {
+    for (char col = 1; col <= 9; ++col) {
+      if (sudoku_get(state, row, col) == 0) {
+        *row_target = row;
+        *col_target = col;
+        return;
       }
     }
   }
 
-  return sudoku_cell(0, 0);
+  *row_target = 0;
+  *col_target = 0;
 }
 
-bool sudoku_solve(Sudoku* state) {
-  Cell next_empty_cell = sudoku_next_empty_cell(state);
+char sudoku_solve(Sudoku* state) {
+  char row, col;
+  sudoku_next_empty_cell(state, &row, &col);
 
   // No more empty cells
-  if (!sudoku_cell_is_valid(next_empty_cell)) {
-    return true;
+  if (row == 0 && col == 0) {
+    return 1;
   }
-
-  size_t row = next_empty_cell.row;
-  size_t col = next_empty_cell.col;
 
   Bitset valid_numbers =
     ~(state->row_contains[row - 1] |
       state->col_contains[col - 1] |
-      state->grid_contains[BOARD_GRID_INDEX(next_empty_cell)]);
+      state->grid_contains[BOARD_GRID_INDEX(row, col)]);
 
-  for (size_t value = 1; value <= 9; ++value) {
+  for (char value = 1; value <= 9; ++value) {
     if (!bitset_contains(valid_numbers, value)) {
       continue;
     }
 
-    sudoku_set(state, next_empty_cell, value);
+    sudoku_set(state, row, col, value);
 
     if (sudoku_solve(state)) {
-      return true;
+      return 1;
     }
 
-    sudoku_unset(state, next_empty_cell);
+    sudoku_unset(state, row, col);
   }
 
-  return false;
+  return 0;
 }
+
+#ifndef WASM
+
+#include <stdio.h>
 
 void sudoku_print_state(Sudoku* state) {
   printf("----------------------\n");
-  for (size_t row = 1; row <= 9; ++row) {
+  for (char row = 1; row <= 9; ++row) {
     printf("|");
 
-    for (size_t col = 1; col <= 9; ++col) {
-      size_t value = sudoku_get(state, sudoku_cell(row, col));
+    for (char col = 1; col <= 9; ++col) {
+      char value = sudoku_get(state, row, col);
 
       if (value == 0) {
         printf("  ");
@@ -135,18 +140,19 @@ void sudoku_print_state(Sudoku* state) {
   }
 
   printf("row contains:\n");
-  for (size_t i = 0; i < 9; ++i) {
+  for (char i = 0; i < 9; ++i) {
     printf("%zu: "BITSET_TEMPLATE"\n", i + 1, BITSET_FMT(state->row_contains[i]));
   }
 
   printf("col contains:\n");
-  for (size_t i = 0; i < 9; ++i) {
+  for (char i = 0; i < 9; ++i) {
     printf("%zu: "BITSET_TEMPLATE"\n", i + 1, BITSET_FMT(state->col_contains[i]));
   }
 
   printf("grid contains:\n");
-  for (size_t i = 0; i < 9; ++i) {
+  for (char i = 0; i < 9; ++i) {
     printf("%zu: "BITSET_TEMPLATE"\n", i + 1, BITSET_FMT(state->grid_contains[i]));
   }
 
 }
+#endif /* ifndef WASM */

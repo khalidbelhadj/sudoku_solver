@@ -1,13 +1,6 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <stdbool.h>
-
-#define BITSET_FMT(bitset)               \
+#define BITSET_FMT(bitset)      \
   (bitset_contains(bitset, 1)), \
   (bitset_contains(bitset, 2)), \
   (bitset_contains(bitset, 3)), \
@@ -20,9 +13,8 @@
 
 #define BITSET_TEMPLATE "%d%d%d%d%d%d%d%d%d"
 
-// Set that can store 16 elements
-typedef uint16_t Bitset;
+typedef int Bitset;
 
-Bitset bitset_insert(Bitset bitset, size_t value);
-Bitset bitset_remove(Bitset bitset, size_t value);
-bool bitset_contains(Bitset bitset, size_t value);
+Bitset bitset_insert(Bitset bitset, int value);
+Bitset bitset_remove(Bitset bitset, int value);
+char bitset_contains(Bitset bitset, int value);
