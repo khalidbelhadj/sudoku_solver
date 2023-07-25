@@ -1,8 +1,5 @@
-#include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
+#pragma once
+
 #include "bitset.h"
 
 //       1  2  3   4  5  6   7  8  9
@@ -19,47 +16,46 @@
 //  8   |  |7 |  ||  |8 |  ||  |9 |  |
 //  9   |  |  |  ||  |  |  ||  |  |  |
 //      |--|--|--||--|--|--||--|--|--|
+//
 
 
-#define BOARD_INDEX(position) 9 * ((position.row) - 1) + (position.col) - 1
-#define BOARD_GRID_INDEX(position) ((position.row - 1) % 3) * 3 + ((position.col - 1) % 3)
+#define WASM
+#define BOARD_INDEX(row, col) 9 * ((row) - 1) + (col) - 1
+#define BOARD_GRID_INDEX(row, col) ((row - 1) / 3) * 3 + ((col - 1) / 3)
 
 #define CELL_FMT(cell) cell.row, cell.col
 #define CELL_TEMPLATE "(%zu, %zu)"
 
-typedef struct {
-  size_t row;
-  size_t col;
-} Cell;
-
-Cell sudoku_cell(size_t row, size_t col);
-
-bool sudoku_cell_is_valid(Cell cell);
-
 // Representation of sudoku board
 typedef struct {
-  size_t* board;
+  char   board[9 * 9];
   Bitset row_contains[9];
   Bitset col_contains[9];
   Bitset grid_contains[9];
 } Sudoku;
 
 // Returns a new empty Sudoku state
+#ifndef WASM
 Sudoku* sudoku_new();
+#endif /* ifndef WASM */
 
 // Returns the value of cell `position` in `state`
-size_t sudoku_get(Sudoku* state, Cell position);
+char sudoku_get(Sudoku* state, char row, char col);
+
+Sudoku * something(Sudoku * state);
 
 // Sets the cell `position` to `value` in `state`
-void sudoku_set(Sudoku* state, Cell position, size_t value);
+char sudoku_set(Sudoku* state, char row, char col, char value);
 
-void sudoku_unset(Sudoku* state, Cell position);
+void sudoku_unset(Sudoku* state, char row, char col);
 
 // Returns the board index of the next empty cell in `state`
-Cell sudoku_next_empty_cell(Sudoku* state);
+void sudoku_next_empty_cell(Sudoku* state, char * row_target, char * col_target);
 
 // Returns true if there exists a solution to the `state`. The `state` is mutated.
-bool sudoku_solve(Sudoku* state);
+char sudoku_solve(Sudoku* state);
 
 // Prints the formatted vertion of `state`
+#ifndef WASM
 void sudoku_print_state(Sudoku* state);
+#endif // !WASM

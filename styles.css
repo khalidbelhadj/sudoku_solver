@@ -1,0 +1,47 @@
+:root {
+  font-family: "Roboto", sans-serif;
+}
+
+#app {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#control-panel {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+#control-panel > button {
+  padding: 1rem 2rem;
+  font-size: 20px;
+  margin: 1rem;
+  width: 20dvw;
+  border-radius: 10px;
+  background-color: white;
+}
+
+
+#control-panel > button:hover {
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(9, 100px);
+  grid-template-rows: repeat(9, 100px);
+  width: fit-content;
+  height: fit-content;
+  padding: 0;
+}
+
+.grid-cell {
+  display: flex;
+  border: 1px solid black;
+  text-align: center;
+  font-size: 50px;
+  align-items: center;
+  justify-content: center;
+}
