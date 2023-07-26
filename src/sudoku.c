@@ -1,27 +1,6 @@
 #include "sudoku.h"
 #include "bitset.h"
 
-Sudoku* sudoku_new() {
-  Sudoku state = (Sudoku){
-      .board = {
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0
-      },
-      .row_contains = {0, 0, 0, 0, 0, 0, 0, 0, 0},
-      .col_contains = {0, 0, 0, 0, 0, 0, 0, 0, 0},
-      .grid_contains = {0, 0, 0, 0, 0, 0, 0, 0, 0},
-  };
-
-  return &state;
-}
-
 char sudoku_get(Sudoku* state, char row, char col) {
   return state->board[BOARD_INDEX(row, col)];
 }
