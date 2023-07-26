@@ -31,6 +31,9 @@ Sudoku * something(Sudoku * state) {
 }
 
 char sudoku_set(Sudoku* state, char row, char col, char value) {
+
+  sudoku_unset(state, row, col);
+
   Bitset* row_bitset = &(state->row_contains[row - 1]);
   Bitset* col_bitset = &(state->col_contains[col - 1]);
   Bitset* grid_bitset = &(state->grid_contains[BOARD_GRID_INDEX(row, col)]);

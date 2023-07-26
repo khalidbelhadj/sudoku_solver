@@ -27,7 +27,6 @@ function wasm_init() {
       const c = wasm.instance.exports;
       const game = c.game;
 
-
       if (!c.sudoku_solve(game)) {
         alert("No solution found");
       }
@@ -39,10 +38,11 @@ function wasm_init() {
           const cell = document.getElementById(`cell-${row}-${col}`);
 
           if (cell.innerHTML == "") {
-
-          cell.style.color = "green";
-            }
-          cell.innerHTML = value;
+            cell.style.color = "green";
+          }
+          if (value != 0) {
+            cell.innerHTML = value;
+         }
         }
       }
     };
@@ -61,7 +61,6 @@ wasm_init();
 // Creating grid elements
 for (let row = 0; row < 9; ++row) {
   for (let col = 0; col < 9; ++col) {
-
     const cell = document.createElement("div");
     grid_element.appendChild(cell);
 
@@ -75,38 +74,57 @@ for (let row = 0; row < 9; ++row) {
     if (row % 3 == 0) cell.style.borderTop = "3px solid black";
     if (row === 8) cell.style.borderBottom = "3px solid black";
 
-    cell.onkeydown = (event)  => {
+    cell.onkeydown = (event) => {
       const c = wasm.instance.exports;
       const game = c.game;
 
-
       if (/^[1-9]$/.test(event.key)) {
-        const result = c.sudoku_set(game, row + 1, col + 1, parseInt(event.key))
+        const result = c.sudoku_set(
+          game,
+          row + 1,
+          col + 1,
+          parseInt(event.key),
+        );
         if (result) {
           grid[row][col] = parseInt(event.key);
           cell.innerHTML = event.key;
+        } else {
+          console.error("did not set", parseInt(event.key));
+          console.error(grid);
+          sudoku_print(game);
         }
       } else if (event.key === "Backspace") {
         event.innerHTML = "";
         grid[row][col] = 0;
         c.sudoku_unset(game, row + 1, col + 1);
+      } else if (event.key === "ArrowUp") {
+        const next_cell = document.getElementById(`cell-${row - 1}-${col}`);
+        next_cell.focus();
+      } else if (event.key === "ArrowDown") {
+        const next_cell = document.getElementById(`cell-${row + 1}-${col}`);
+        next_cell.focus();
+      } else if (event.key === "ArrowLeft") {
+        const next_cell = document.getElementById(`cell-${row}-${col - 1}`);
+        next_cell.focus();
+      } else if (event.key === "ArrowRight") {
+        const next_cell = document.getElementById(`cell-${row}-${col + 1}`);
+        next_cell.focus();
       }
-    }
+      console.log(event.key);
+    };
 
     cell.onfocus = () => {
       cell.style.backgroundColor = "#e3e3e3";
       cell.style.outline = "none";
-    }
+    };
 
     cell.onclick = () => {
       cell.focus();
-    }
+    };
 
     cell.onblur = () => {
       cell.style.backgroundColor = "white";
-    }
-
-
+    };
   }
 }
 
