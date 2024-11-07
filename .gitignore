@@ -2,3 +2,4 @@
 .idea/
 compile_commands.json
 build/*
+!build/main.wasm
