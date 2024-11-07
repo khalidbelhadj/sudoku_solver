@@ -1,3 +1,3 @@
 
 #include "sudoku.h"
-Sudoku game = {};
+Sudoku game = {0};

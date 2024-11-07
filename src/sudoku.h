@@ -19,7 +19,6 @@
 //
 
 #define WASM
-#define BOARD_INDEX(row, col) 9 * ((row)-1) + (col)-1
 #define BOARD_GRID_INDEX(row, col) ((row - 1) / 3) * 3 + ((col - 1) / 3)
 
 #define CELL_FMT(cell) cell.row, cell.col
@@ -27,7 +26,7 @@
 
 // Representation of sudoku board
 typedef struct {
-  char* board;
+  char board[9][9];
   Bitset row_contains[9];
   Bitset col_contains[9];
   Bitset grid_contains[9];
@@ -49,8 +48,3 @@ void sudoku_next_empty_cell(Sudoku* state, char* row_target, char* col_target);
 // Returns true if there exists a solution to the `state`. The `state` is
 // mutated.
 char sudoku_solve(Sudoku* state);
-
-// Prints the formatted vertion of `state`
-#ifndef WASM
-void sudoku_print_state(Sudoku* state);
-#endif  // !WASM

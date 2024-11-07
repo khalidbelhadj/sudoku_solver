@@ -17,7 +17,7 @@ function make_env(...envs) {
 }
 
 function wasm_init() {
-  WebAssembly.instantiateStreaming(fetch("build/debug/run.wasm"), {
+  WebAssembly.instantiateStreaming(fetch("build/main.wasm"), {
     env: make_env(),
   }).then((w0) => {
     wasm = w0;
@@ -34,7 +34,6 @@ function wasm_init() {
       for (let row = 0; row < 9; ++row) {
         for (let col = 0; col < 9; ++col) {
           const value = c.sudoku_get(game, row + 1, col + 1);
-          grid[row][col] = value;
           const cell = document.getElementById(`cell-${row}-${col}`);
 
           if (cell.innerHTML == "") {
@@ -42,19 +41,17 @@ function wasm_init() {
           }
           if (value != 0) {
             cell.innerHTML = value;
-         }
+          }
         }
       }
+
+      sudoku_print();
     };
   });
 }
 
 // Initialising grid
-let grid = [];
-let grid_element = document.getElementById("grid");
-for (let i = 0; i < 9; ++i) {
-  grid.push(Array(9).fill(0));
-}
+let grid = document.getElementById("grid");
 
 wasm_init();
 
@@ -62,17 +59,16 @@ wasm_init();
 for (let row = 0; row < 9; ++row) {
   for (let col = 0; col < 9; ++col) {
     const cell = document.createElement("div");
-    grid_element.appendChild(cell);
+    grid.appendChild(cell);
 
     cell.setAttribute("id", `cell-${row}-${col}`);
     cell.setAttribute("tabindex", "0");
-    cell.setAttribute("class", "grid-cell");
 
     // Thick borders
-    if (col % 3 == 0) cell.style.borderLeft = "3px solid black";
-    if (col === 8) cell.style.borderRight = "3px solid black";
-    if (row % 3 == 0) cell.style.borderTop = "3px solid black";
-    if (row === 8) cell.style.borderBottom = "3px solid black";
+    if (col % 3 == 0) cell.style.borderLeft = "2px solid black";
+    if (col === 8) cell.style.borderRight = "2px solid black";
+    if (row % 3 == 0) cell.style.borderTop = "2px solid black";
+    if (row === 8) cell.style.borderBottom = "2px solid black";
 
     cell.onkeydown = (event) => {
       const c = wasm.instance.exports;
@@ -83,19 +79,18 @@ for (let row = 0; row < 9; ++row) {
           game,
           row + 1,
           col + 1,
-          parseInt(event.key),
+          parseInt(event.key)
         );
+
         if (result) {
-          grid[row][col] = parseInt(event.key);
           cell.innerHTML = event.key;
         } else {
           console.error("did not set", parseInt(event.key));
-          console.error(grid);
           sudoku_print(game);
         }
+        sudoku_print();
       } else if (event.key === "Backspace") {
         event.innerHTML = "";
-        grid[row][col] = 0;
         c.sudoku_unset(game, row + 1, col + 1);
       } else if (event.key === "ArrowUp") {
         const next_cell = document.getElementById(`cell-${row - 1}-${col}`);
@@ -135,7 +130,6 @@ resetButton.onclick = () => {
 
   for (let row = 0; row < 9; ++row) {
     for (let col = 0; col < 9; ++col) {
-      grid[row][col] = 0;
       const cell = document.getElementById(`cell-${row}-${col}`);
       cell.innerHTML = "";
       c.sudoku_unset(game, row + 1, col + 1);
